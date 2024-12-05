@@ -44,6 +44,7 @@ class RouteServiceProvider extends ServiceProvider
     
             // Check if the IP is banned
             if (cache()->has("banned:$ip")) {
+                \Log::warning("Banned IP attempted access: $ip");
                 return Limit::none(); // Deny all requests
             }
     
@@ -54,17 +55,19 @@ class RouteServiceProvider extends ServiceProvider
             if (RateLimiter::tooManyAttempts($key, 30)) {
                 // Ban the IP for 10 minutes
                 cache()->put("banned:$ip", true, now()->addMinutes(10));
+                \Log::warning("IP banned due to too many requests: $ip");
                 return Limit::none(); // Deny all requests
             }
     
             return $limit;
         });
-
-        RateLimiter::for('web', function ($request) {
+    
+        RateLimiter::for('web', function (Request $request) {
             $ip = $request->ip();
     
             // Check if the IP is banned
             if (cache()->has("banned:$ip")) {
+                \Log::warning("Banned IP attempted access: $ip");
                 return Limit::none(); // Deny all requests
             }
     
@@ -75,6 +78,7 @@ class RouteServiceProvider extends ServiceProvider
             if (RateLimiter::tooManyAttempts($key, 30)) {
                 // Ban the IP for 10 minutes
                 cache()->put("banned:$ip", true, now()->addMinutes(10));
+                \Log::warning("IP banned due to too many requests: $ip");
                 return Limit::none(); // Deny all requests
             }
     
