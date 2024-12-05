@@ -40,20 +40,25 @@ class RouteServiceProvider extends ServiceProvider
     protected function configureRateLimiting(): void
     {
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(30)
-                ->by($request->ip())
-                ->response(function () {
-                    return response('Too many requests', 429);
-                });
+            $ip = $request->ip();
+    
+            // Check if the IP is banned
+            if (cache()->has("banned:$ip")) {
+                return Limit::none(); // Deny all requests
+            }
+    
+            // Define rate limiting (30 requests per minute)
+            $limit = Limit::perMinute(30)->by($ip);
+            $key = "throttle:$ip";
+    
+            if (RateLimiter::tooManyAttempts($key, 30)) {
+                // Ban the IP for 10 minutes
+                cache()->put("banned:$ip", true, now()->addMinutes(10));
+                return Limit::none(); // Deny all requests
+            }
+    
+            return $limit;
         });
-
-        // RateLimiter::for('web', function (Request $request) {
-        //     return Limit::perMinute(30)
-        //         ->by($request->ip())
-        //         ->response(function () {
-        //             return response('Too many requests', 429);
-        //         });
-        // });
 
         RateLimiter::for('web', function ($request) {
             $ip = $request->ip();
