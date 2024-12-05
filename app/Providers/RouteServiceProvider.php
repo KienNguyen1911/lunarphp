@@ -27,6 +27,7 @@ class RouteServiceProvider extends ServiceProvider
         $this->configureRateLimiting();
 
         $this->routes(function () {
+            \Log::info(request()->ip() . ' => ' . request()->ip());
             Route::middleware('api')
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
