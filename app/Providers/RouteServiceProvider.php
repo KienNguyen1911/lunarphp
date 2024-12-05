@@ -41,7 +41,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         RateLimiter::for('api', function (Request $request) {
             $ip = $request->ip();
-    
+            \Log::info('api' . $ip);
             // Check if the IP is banned
             if (cache()->has("banned:$ip")) {
                 \Log::warning("Banned IP attempted access: $ip");
@@ -64,6 +64,7 @@ class RouteServiceProvider extends ServiceProvider
     
         RateLimiter::for('web', function (Request $request) {
             $ip = $request->ip();
+            \Log::info('web' . $ip);
     
             // Check if the IP is banned
             if (cache()->has("banned:$ip")) {
